@@ -1,0 +1,1 @@
+/usr/local/bin/c++      -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -rdynamic CMakeFiles/my_project.dir/my_project.cpp.o  -o my_project -lrt -lz 

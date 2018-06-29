@@ -1,0 +1,1 @@
+cmake ../../my_project -DCMAKE_PREFIX_PATH="/usr/bin/cmake" -DSEQAN_INCLUDE_PATH="/usr/share/seqan"

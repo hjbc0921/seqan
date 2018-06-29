@@ -1,0 +1,3 @@
+/data/home/hjbc0921/bhi_lab/tutorial/my_project-build/release/CMakeFiles/rebuild_cache.dir
+/data/home/hjbc0921/bhi_lab/tutorial/my_project-build/release/CMakeFiles/edit_cache.dir
+/data/home/hjbc0921/bhi_lab/tutorial/my_project-build/release/CMakeFiles/my_project.dir
