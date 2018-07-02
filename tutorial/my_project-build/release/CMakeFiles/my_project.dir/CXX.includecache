@@ -6,11 +6,9 @@
 
 #IncludeRegexTransform: 
 
-/data/home/hjbc0921/bhi_lab/tutorial/my_project/my_project.cpp
+/data/home/hjbc0921/seqan/tutorial/my_project/my_project.cpp
 iostream
 -
-seqan/sequence.h
--
-seqan/score.h
+seqan/arg_parse.h
 -
 

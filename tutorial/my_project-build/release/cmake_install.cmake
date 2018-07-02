@@ -1,4 +1,4 @@
-# Install script for directory: /data/home/hjbc0921/bhi_lab/tutorial/my_project
+# Install script for directory: /data/home/hjbc0921/seqan/tutorial/my_project
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -40,5 +40,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/data/home/hjbc0921/bhi_lab/tutorial/my_project-build/release/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/data/home/hjbc0921/seqan/tutorial/my_project-build/release/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

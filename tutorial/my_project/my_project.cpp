@@ -1,112 +1,102 @@
 #include <iostream>
-#include <seqan/sequence.h>
-#include <seqan/score.h>
+#include <seqan/arg_parse.h>
 
 using namespace seqan;
 using std::cout;
 using std::endl;
 
-template <typename TText, typename TPattern>
-int computeLocalScore(TText const & subText, TPattern const & pattern){
-	int localScore = 0;
-	for (unsigned i=0; i<length(pattern); ++i){
-		if (subText[i] == pattern[i]) ++localScore;
-	}
-	return localScore;
-}
+struct ModifyStringOptions {
+	unsigned period;
+	bool toUppercase;
+	bool toLowercase;
+	CharString inputFileName;
+	unsigned rangeBegin, rangeEnd;	
+	ModifyStringOptions() :
+	period(1), rangeBegin(0), rangeEnd(0), toUppercase(false), toLowercase(false)
+	{}
+};
 
-template <typename TText>
-int computeLocalScore(TText const & subText, String<AminoAcid> const & pattern){
-	int localScore = 0;
-	for (unsigned i=0; i<length(pattern); ++i){
-		localScore += score(Blosum62(), subText[i], pattern[i]);
-	}
-	return localScore;
-}
+ArgumentParser::ParseResult
+parseCommandLine(ModifyStringOptions & options, int argc, char const ** argv){
+	ArgumentParser parser("modify_string");
+	addOption(parser, ArgParseOption("I", "input-file", "text input file", ArgParseArgument::INPUT_FILE, "IN"));
+	setValidValues(parser, "input-file", "txt");
+	setRequired(parser, "input-file");
 
-template <typename TText, typename TPattern>
-String<int> computeScore(TText const & text, TPattern const & pattern){
-	String<int> score;
-	resize(score,length(text)-length(pattern)+1);
+	addOption(parser, ArgParseOption("i", "period", "Period to use for the index.", ArgParseArgument::INTEGER, "INT"));
+	setMinValue(parser, "period", "1");
+	addOption(parser, ArgParseOption("U", "uppercase", "Select to-uppercase as operation."));
+	addOption(parser, ArgParseOption("L", "lowercase", "Select to-lowercase as operation."));
+	addOption(parser, ArgParseOption("r", "range", "The range to modify.", ArgParseArgument::INTEGER, "BEGIN END", false, 2));
+	ArgumentParser::ParseResult res = parse(parser, argc, argv);
+	if (res != ArgumentParser::PARSE_OK) 
+		return res;
+
+	getOptionValue(options.period, parser, "period");
+	options.toUppercase = isSet(parser, "uppercase");
+	options.toLowercase = isSet(parser, "lowercase");
+	getOptionValue(options.inputFileName, parser, "input-file");
+	getOptionValue(options.rangeBegin, parser, "range", 0);
+	getOptionValue(options.rangeEnd, parser, "range", 1);
 	
-	for (unsigned i=0; i<length(text)-length(pattern)+1; ++i){
-		score[i] = computeLocalScore(infix(text, i, i+length(pattern)), pattern);
+	if (options.toUppercase && options.toLowercase) {
+		std::cerr << "ERROR : You can not specify both to-uppercase and to-lowercase!\n";
+		return ArgumentParser::PARSE_ERROR;
 	}
+
+	return ArgumentParser::PARSE_OK;
+}
+
+CharString modifyString(CharString const & text, ModifyStringOptions const & options) {
+    
+	CharString result;
+
+    if (options.toLowercase)
+    {
+        for (unsigned i = 0; i < length(text); ++i)
+        {
+            if (i % options.period == 0u)
+                appendValue(result, tolower(text[i]));
+            else
+                appendValue(result, text[i]);
+        }
+    }
+    else
+    {
+        for (unsigned i = 0; i < length(text); ++i)
+        {
+            if (i % options.period == 0u)
+                appendValue(result, toupper(text[i]));
+            else
+                appendValue(result, text[i]);
+        }
+    }
+
+    return result;
+}
+
+int main(int argc, char const ** argv){
 	
-	return score;
-}	
+	ModifyStringOptions options;
+	ArgumentParser::ParseResult res = parseCommandLine(options, argc, argv);
 
-template <typename TText>
-void print(TText const & text){
-	cout << text << endl;
-}
-
-void print(String<int> const & text){
-	for (unsigned i=0; i<length(text); ++i){
-		cout << text[i] << " ";
+	if (res != ArgumentParser::PARSE_OK) {
+		return res == ArgumentParser::PARSE_ERROR;
 	}
-	cout << endl;
-}
-
-template <typename TText, typename TSpec>
-void print(TText const & text, TSpec const & /*tag*/){
-	cout << "when? "<< text << endl;
-	print(text);
-}
-
-struct MaxOnly {};
-	
-template <typename TText>
-void print(TText const & score, MaxOnly const & /*tag*/){
-	int maxScore = score[0];
-	String<int> output;
-	appendValue(output, 0);
-	for (unsigned i=1; i<length(score); ++i){
-		if (score[i] > maxScore){
-			maxScore = score[i];
-			clear(output);
-			resize(output, 1, i);
-		}
-		else if (score[i] == maxScore){
-			appendValue(output, i);
-		}
+		
+	std::fstream inFile(toCString(options.inputFileName), std::ios::binary | std::ios::in);
+	if (!inFile.good()){
+		std::cerr << "ERROR : Could not open input file " << options.inputFileName << '\n';
+		return 1;
 	}
-	print(output);
-}
-
-struct GreaterZero {};
-
-template <typename TText>
-void print(TText const & score, GreaterZero const & /*tag*/){
-	String<Pair<int> > output;
-	for (unsigned i=1; i<length(score); ++i){
-		if (score[i] > 0) appendValue(output, Pair<int>(i,score[i]));
+	CharString text;
+	while (inFile.good()){
+		char c = inFile.get();
+		if (inFile.good())	
+			appendValue(text, c);
 	}
-	for (unsigned i=0; i<length(output); ++i){
-		cout << "(" << output[i].i1 << "; " << output[i].i2 << ") ";
-	}
-	cout << endl;
-}
-
-int main(){
-	String<char> text = "This is an awesome tutorial to get to know SeqAn!";
-	String<char> pattern = "tutorial";
-	String<int> score = computeScore(text, pattern);
-	print(text);
-	print(pattern);
-	print(score);
-	print(score, MaxOnly());
-	print(score, GreaterZero());
-
-	String<AminoAcid> protein = "tutorial";
-	String<int> proteinScore = computeScore(text, protein);	
-	print(text);
-	print(protein);
-	print(proteinScore);
-	print(proteinScore, MaxOnly());
-	print(proteinScore, GreaterZero());
+	cout << modifyString(text, options);
 
 	return 0;
 }
-
 

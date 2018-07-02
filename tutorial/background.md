@@ -46,7 +46,49 @@ print(score, something())
 * DnaString, CharString, 
 
 ### command.cpp
+```c++
+./my_project -h or ./my_project "test" -i 1 -U ...
+
+#include <seqan/arg_parse.h>
+seqan::ArgumentParser parser("modify_string"); //ArgumentParser object
+//arguments & options constructors
+addArgument(parser, seqan::ArgParseArgument(seqan::ArgParseArgument::STRING, "TEXT"));
+addOption(parser, seqan::ArgParseOption("i", "period", "Period to use for the index.", seqan::ArgParseArgument::INTEGER, "INT")); //can use isList parameter(true, 3) or tuples(false,2)
+seqan::setMinValue(parser, "i", "10");
+setRequired(parser, "i");
+seqan::setValidValues(parser, "i", "1 2 3");
+
+//input output file argument
+seqan::addOption(parser, seqan::ArgParseOption("I", "input-file", "Path to the input file", seqan::ArgParseArgument::INPUT_FILE, "IN"));
+seqan::addOption(parser, seqan::ArgParseOption("O", "output-file", "Path to the output file", seqan::ArgParseArgument::OUTPUT_FILE, "OUT"));
+seqan::setValidValues(parser, "input-file", "txt");
+seqan::getOptionValue(inputFileName, parser, "input-file");
+
+//parse & get return value
+seqan::ArgumentParser::ParseResult res = seqan::parse(parser, argc, argv); //seqan::Argument::PARSE_ERROR or PARSE_OK or --help 
+
+//get values
+getOptionValue(destination, parser, "period");
+isSet(parser, "uppercase");
+getArgumentValue(destination, parser, 0);
+
 ```
-./my_project modify_string -h
+* better to use struct to save these options and arguments (with initialization)
+* better to encapsulate argument parsing into its own function 
+```c++
+seqan::ArgumentParser::ParseResult
+parseCommandLine(ModifyStringOptions & options, int argc, char const ** argv);
+seqan::ArgumentParser::ParseResult res = parseCommandLine(options, argc, argv);
 ```
+* documentation
+```c++
+seqan::setShortDescription(parser, "String Modifier");
+seqan::setVersion(parser, "1.0");
+seqan::setDate(parser, "July 2018");
+seqan::addUsageLine(parser, "[\\fIOPTIONS\\fP] \"\\fITEXT\\fP\"");
+seqan::addDescription(parser, "This program allows simple character modifications");
+```
+
+
+
 
