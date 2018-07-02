@@ -46,6 +46,8 @@ print(score, something())
 * DnaString, CharString, 
 
 ### command.cpp
+**refer to command.cpp **
+
 ```c++
 ./my_project -h or ./my_project "test" -i 1 -U ...
 

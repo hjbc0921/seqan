@@ -9,6 +9,8 @@
 /data/home/hjbc0921/seqan/tutorial/my_project/my_project.cpp
 iostream
 -
-seqan/arg_parse.h
+seqan/sequence.h
+-
+seqan/stream.h
 -
 
